@@ -1,96 +1,98 @@
 #include <iostream>
-#include <string.h>
 using namespace std;
-
-void SJF_pre(int n, int BT[], string p[], int AT[])
+#define max 20
+int main()
 {
-    int Finish_time[10], TA[10], WT[10];
-    float cnt = 0, count = 0;
-    for (int i = 0; i < n; i++)
+
+    int P[max], CT[max], AT[max], BT[max], TAT[max], WT[max], RT[max], time, curr_time = 0, completed = 0;
+    float AvgWT = 0, AvgTAT = 0, Pno;
+    
+    int exe_ord[max], exe_time[max], exe_index = 0;
+
+    int x = 0;
+    cout << "\n ---- ---- MENU ---- ----\n";
+    cout << "Enter number of processes: ";
+    cin >> Pno;
+    for (int i = 0; i < Pno; i++)
     {
-        if (i == 0)
+        P[i] = i + 1;
+        cout << "Enter Arrival time of P" << i + 1;
+        cin >> AT[i];
+        cout << "Enter Burst time of P" << i + 1;
+        cin >> BT[i];
+        RT[i] = BT[i];
+    }
+
+    cout << "\nProcess No.\tArrival Time\tBurst Time";
+    for (int i = 0; i < Pno; i++)
+    {
+        cout << "\n"
+             << P[i] << "\t\t" << AT[i] << "\t\t" << BT[i];
+    }
+
+    while (completed < Pno)
+    {
+        int shortest_time = 99;
+        int shortest_ind = -1;
+        for (int i = 0; i < Pno; i++)
         {
-            Finish_time[i] = BT[i] + AT[i];
-            TA[i] = Finish_time[i] - AT[i];
+            if (AT[i] <= curr_time && RT[i] > 0 && RT[i] < shortest_time)
+            {
+                shortest_ind = i;
+                shortest_time = RT[i];
+            }
+        }
+
+        if (shortest_ind != exe_ord[exe_index - 1])
+        {
+            exe_ord[exe_index] = shortest_ind;
+            exe_time[exe_index] = curr_time;
+            exe_index++;
+        }
+
+        if (shortest_ind == -1)
+        {
+            curr_time++;
         }
         else
         {
-            Finish_time[i] = BT[i] + Finish_time[i - 1];
-            TA[i] = Finish_time[i] - AT[i];
-        }
-    }
-    cout << endl;
-    cout << "Premptive" << endl;
-    cout << "GANTT-CHART" << endl;
-    cout << endl;
-    for (int i = 0; i < n; i++)
-    {
-        cout << "  " << p[i] << "  ";
-    }
-    cout << endl;
-    cout << AT[0];
-    int d = BT[0] + AT[0];
-    for (int i = 0; i < n; i++)
-    {
-        cout << "    " << d;
-        d = d + BT[i + 1];
-    }
-    cout << endl;
-    cout << "TURN-AROUND TIME " << endl;
-    for (int i = 0; i < n; i++)
-    {
-        cout << "Turn-around time of " << p[i] << "= " << TA[i] << " msec" << endl;
-    }
-    for (int i = 0; i < n; i++)
-    {
-        cnt += TA[i];
-    }
-    cnt = cnt / n;
-    cout << "Average Turn-around time of = " << cnt << " msec" << endl;
-    cout << endl;
-    for (int i = 0; i < n; i++)
-    {
-        WT[i] = TA[i] - BT[i];
-        cout << "Waiting time of " << p[i] << "= " << WT[i] << " msec" << endl;
-    }
-    for (int i = 0; i < n; i++)
-    {
-        count += WT[i];
-    }
-    count = count / n;
-    cout << "Average Waiting time of = " << count << " msec" << endl;
-}
-
-int main()
-{
-    int n, s, BT[10], AT[10];
-    string p[10];
-    cout << "Enter the number of process: ";
-    cin >> s;
-    for (int i = 0; i < s; i++)
-    {
-        cout << "Enter the process name: ";
-        cin >> p[i];
-        cout << "Enter the Burst time :";
-        cin >> BT[i];
-        cout << "Enter the Arrival time : ";
-        cin >> AT[i];
-        if (AT[i] != 0)
-        {
-            if (i > 1)
+            RT[shortest_ind]--;
+            curr_time++;
+            if (RT[shortest_ind] == 0)
             {
-                if (BT[i] < BT[i - 1])
-                {
-                    int c = BT[i];
-                    string q = p[i];
-                    BT[i] = BT[i - 1];
-                    p[i] = p[i - 1];
-                    BT[i - 1] = c;
-                    p[i - 1] = q;
-                }
+                CT[shortest_ind] = curr_time;
+                TAT[shortest_ind] = CT[shortest_ind] - AT[shortest_ind];
+                WT[shortest_ind] = TAT[shortest_ind] - BT[shortest_ind];
+                completed++;
             }
         }
+        time = curr_time;
     }
-    SJF_pre(s, BT, p, AT);
+
+    cout << "\n --------  GANTT CHART  --------\n";
+    for (int i = 0; i < exe_index; i++)
+    {
+        cout << "|  P" << exe_ord[i] << "\t";
+    }
+    cout << "|\n";
+    for (int i = 0; i < exe_index; i++)
+    {
+        cout << exe_time[i] << "\t";
+    }
+    cout << time;
+
+    for (int i = 0; i < Pno; i++)
+    {
+        cout << "\nWaiting time for P" << P[i] << ": " << WT[i];
+        AvgWT += WT[i];
+    }
+    cout << "\nAvg WT:   " << AvgWT / Pno;
+    for (int i = 0; i < Pno; i++)
+    {
+        cout << "\nTurn Around time for P" << P[i] << ": " << TAT[i];
+        AvgTAT += TAT[i];
+    }
+    cout << "\nAvg TAT:   " << AvgTAT / Pno;
+
     return 0;
 }
